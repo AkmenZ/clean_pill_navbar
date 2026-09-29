@@ -8,6 +8,10 @@ package only depends on `flutter/widgets.dart` and accepts plain `IconData`,
 `Color`, and `TextStyle` values, so you can wire it to whichever UI library
 your app uses.
 
+## Preview
+
+![PillNavBar demo](https://raw.githubusercontent.com/AkmenZ/clean_pill_navbar/main/screenshots/demo.gif)
+
 ## Features
 - Solid pill-shaped nav bar with an animated sliding selection indicator
 - Fully customizable background, border, indicator, and text/icon colors
