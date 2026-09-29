@@ -1,3 +1,7 @@
+## 0.0.2
+
+* Added demo GIF to README.
+
 ## 0.0.1
 
 * Initial release: PillNavBar widget with customizable colors, border, and 2–5 item support.
