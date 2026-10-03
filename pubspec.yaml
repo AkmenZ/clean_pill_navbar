@@ -1,6 +1,6 @@
 name: clean_pill_navbar
 description: "A customizable, iOS 26+ inspired pill-shaped bottom navigation bar for Flutter — no glass effects, just clean, configurable pills."
-version: 0.0.2
+version: 1.0.0
 homepage: https://github.com/AkmenZ/clean_pill_navbar
 repository: https://github.com/AkmenZ/clean_pill_navbar
 issue_tracker: https://github.com/AkmenZ/clean_pill_navbar/issues

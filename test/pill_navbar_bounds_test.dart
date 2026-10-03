@@ -7,24 +7,24 @@ void main() {
 
   test('throws when more than kPillNavBarMaxItems are provided', () {
     final tooMany = List.generate(
-      kPillNavBarMaxItems + 1,
-      (_) => const PillNavBarItem(icon: icon),
+      kCleanPillNavBarMaxItems + 1,
+      (_) => const CleanPillNavBarItem(icon: icon),
     );
 
     expect(
-      () => PillNavBar(items: tooMany, selectedIndex: 0, onTap: (_) {}),
+      () => CleanPillNavBar(items: tooMany, selectedIndex: 0, onTap: (_) {}),
       throwsAssertionError,
     );
   });
 
   test('allows exactly kPillNavBarMaxItems', () {
     final maxItems = List.generate(
-      kPillNavBarMaxItems,
-      (_) => const PillNavBarItem(icon: icon),
+      kCleanPillNavBarMaxItems,
+      (_) => const CleanPillNavBarItem(icon: icon),
     );
 
     expect(
-      () => PillNavBar(items: maxItems, selectedIndex: 0, onTap: (_) {}),
+      () => CleanPillNavBar(items: maxItems, selectedIndex: 0, onTap: (_) {}),
       returnsNormally,
     );
   });
@@ -33,10 +33,10 @@ void main() {
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
-        child: PillNavBar(
+        child: CleanPillNavBar(
           items: const [
-            PillNavBarItem(icon: icon, label: 'One'),
-            PillNavBarItem(icon: icon, label: 'Two'),
+            CleanPillNavBarItem(icon: icon, label: 'One'),
+            CleanPillNavBarItem(icon: icon, label: 'Two'),
           ],
           selectedIndex: 0,
           onTap: (_) {},

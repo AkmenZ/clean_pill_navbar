@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 /// Represents a single tab in a [PillNavBar].
 @immutable
-class PillNavBarItem {
-  const PillNavBarItem({
+class CleanPillNavBarItem {
+  const CleanPillNavBarItem({
     required this.icon,
     this.selectedIcon,
     this.label,

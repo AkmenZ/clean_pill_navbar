@@ -41,18 +41,18 @@ class _DemoPageState extends State<DemoPage> {
   int selectedIndex = 0;
 
   final items = const [
-    PillNavBarItem(
+    CleanPillNavBarItem(
       icon: Icons.home_outlined,
       selectedIcon: Icons.home,
       label: 'Home',
     ),
-    PillNavBarItem(icon: Icons.search, label: 'Search'),
-    PillNavBarItem(
+    CleanPillNavBarItem(icon: Icons.search, label: 'Search'),
+    CleanPillNavBarItem(
       icon: Icons.favorite_border,
       selectedIcon: Icons.favorite,
       label: 'Likes',
     ),
-    PillNavBarItem(
+    CleanPillNavBarItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
       label: 'Profile',
@@ -93,7 +93,7 @@ class _DemoPageState extends State<DemoPage> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: PillNavBar(
+                  child: CleanPillNavBar(
                     items: items,
                     selectedIndex: selectedIndex,
                     onTap: (i) => setState(() => selectedIndex = i),
@@ -106,6 +106,7 @@ class _DemoPageState extends State<DemoPage> {
                     backgroundColor: Colors.white.withValues(alpha: 0.20),
                     enableBackgroundBlur: true,
                     blurSigma: 6.0,
+                    fadeDuration: const Duration(milliseconds: 300),
                     borderColor: Colors.grey,
                     indicatorColor: Colors.blueAccent,
                     indicatorBorderColor: Colors.transparent,

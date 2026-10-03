@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const items = [
-    PillNavBarItem(icon: CupertinoIcons.house),
-    PillNavBarItem(icon: CupertinoIcons.search),
-    PillNavBarItem(icon: CupertinoIcons.heart),
+    CleanPillNavBarItem(icon: CupertinoIcons.house),
+    CleanPillNavBarItem(icon: CupertinoIcons.search),
+    CleanPillNavBarItem(icon: CupertinoIcons.heart),
   ];
 
   testWidgets('renders all items and highlights selected one', (tester) async {
@@ -16,7 +16,7 @@ void main() {
       CupertinoApp(
         home: StatefulBuilder(
           builder: (context, setState) {
-            return PillNavBar(
+            return CleanPillNavBar(
               items: items,
               selectedIndex: selected,
               onTap: (i) => setState(() => selected = i),
@@ -38,7 +38,7 @@ void main() {
 
   test('asserts item count bounds', () {
     expect(
-      () => PillNavBar(items: [items[0]], selectedIndex: 0, onTap: (_) {}),
+      () => CleanPillNavBar(items: [items[0]], selectedIndex: 0, onTap: (_) {}),
       throwsAssertionError,
     );
   });
