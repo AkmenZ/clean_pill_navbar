@@ -1,11 +1,20 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+
 import 'pill_navbar_item.dart';
 
 /// Maximum number of tabs supported.
 const int kCleanPillNavBarMaxItems = 5;
+
+// Press-scale behaviour (hardcoded for now).
+const double _kPressScale = 1.04;
+const Duration _kPressScaleDuration = Duration(milliseconds: 200);
+const Curve _kPressScaleCurve = Curves.easeOut;
+// Keeps the scale-up visible long enough on a quick tap.
+const Duration _kMinPressVisible = Duration(milliseconds: 120);
 
 /// A clean, customizable, iOS 26+ inspired pill-shaped navigation bar.
 class CleanPillNavBar extends StatelessWidget {
@@ -34,6 +43,7 @@ class CleanPillNavBar extends StatelessWidget {
     this.fadeDuration = const Duration(milliseconds: 200),
     this.enableHapticFeedback = true,
     this.enableIndicatorDrag = true,
+    this.enablePressScale = true,
     this.borderRadius = const BorderRadius.all(Radius.circular(999)),
     this.border,
     this.enableBackgroundBlur = false,
@@ -80,6 +90,11 @@ class CleanPillNavBar extends StatelessWidget {
   /// Defaults to `true`.
   final bool enableIndicatorDrag;
 
+  /// Whether the whole bar scales up slightly while pressed, stays scaled
+  /// while held or dragged, and scales back on release.
+  /// Defaults to `true`.
+  final bool enablePressScale;
+
   final BorderRadius borderRadius;
   final BoxBorder? border;
   final bool enableBackgroundBlur;
@@ -90,70 +105,75 @@ class CleanPillNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final resolvedItemWidth = _resolveItemWidth(constraints.maxWidth);
-        final resolvedShadow = boxShadow ?? _defaultShadowForElevation();
+    return _PressScale(
+      enabled: enablePressScale,
+      builder: (onPressedChanged) => LayoutBuilder(
+        builder: (context, constraints) {
+          final resolvedItemWidth = _resolveItemWidth(constraints.maxWidth);
+          final resolvedShadow = boxShadow ?? _defaultShadowForElevation();
 
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            boxShadow: resolvedShadow,
-          ),
-          child: ClipRRect(
-            borderRadius: borderRadius,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: enableBackgroundBlur
-                      ? BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: blurSigma,
-                            sigmaY: blurSigma,
-                          ),
-                          child: DecoratedBox(
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              boxShadow: resolvedShadow,
+            ),
+            child: ClipRRect(
+              borderRadius: borderRadius,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: enableBackgroundBlur
+                        ? BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: blurSigma,
+                              sigmaY: blurSigma,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(color: backgroundColor),
+                            ),
+                          )
+                        : DecoratedBox(
                             decoration: BoxDecoration(color: backgroundColor),
                           ),
-                        )
-                      : DecoratedBox(
-                          decoration: BoxDecoration(color: backgroundColor),
-                        ),
-                ),
-                Container(
-                  height: height,
-                  padding: EdgeInsets.all(outerPadding),
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    borderRadius: borderRadius,
-                    border: border ?? Border.all(color: borderColor),
                   ),
-                  child: _PillNavBarBody(
-                    items: items,
-                    selectedIndex: selectedIndex,
-                    itemWidth: resolvedItemWidth,
-                    height: height - outerPadding * 2,
-                    iconSize: iconSize,
-                    selectedColor: selectedColor,
-                    unselectedColor: unselectedColor,
-                    showLabels: showLabels,
-                    showSelectedLabelOnly: showSelectedLabelOnly,
-                    labelStyle: labelStyle,
-                    duration: duration,
-                    curve: curve,
-                    fadeDuration: fadeDuration,
-                    enableHapticFeedback: enableHapticFeedback,
-                    enableIndicatorDrag: enableIndicatorDrag,
-                    borderRadius: borderRadius,
-                    indicatorColor: indicatorColor,
-                    indicatorBorderColor: indicatorBorderColor,
-                    onChanged: onTap,
+                  Container(
+                    height: height,
+                    padding: EdgeInsets.all(outerPadding),
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      borderRadius: borderRadius,
+                      border: border ?? Border.all(color: borderColor),
+                    ),
+                    child: _PillNavBarBody(
+                      items: items,
+                      selectedIndex: selectedIndex,
+                      itemWidth: resolvedItemWidth,
+                      height: height - outerPadding * 2,
+                      iconSize: iconSize,
+                      selectedColor: selectedColor,
+                      unselectedColor: unselectedColor,
+                      showLabels: showLabels,
+                      showSelectedLabelOnly: showSelectedLabelOnly,
+                      labelStyle: labelStyle,
+                      duration: duration,
+                      curve: curve,
+                      fadeDuration: fadeDuration,
+                      enableHapticFeedback: enableHapticFeedback,
+                      enableIndicatorDrag: enableIndicatorDrag,
+                      enablePressScale: enablePressScale,
+                      borderRadius: borderRadius,
+                      indicatorColor: indicatorColor,
+                      indicatorBorderColor: indicatorBorderColor,
+                      onChanged: onTap,
+                      onPressedChanged: onPressedChanged,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -180,6 +200,37 @@ class CleanPillNavBar extends StatelessWidget {
   }
 }
 
+/// Scales its whole child (the entire bar) while pressed. Sits outside the
+/// bar's clip so the scaled edges aren't cut off.
+class _PressScale extends StatefulWidget {
+  const _PressScale({required this.enabled, required this.builder});
+
+  final bool enabled;
+  final Widget Function(ValueChanged<bool> onPressedChanged) builder;
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value || !mounted) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: (widget.enabled && _pressed) ? _kPressScale : 1.0,
+      duration: _kPressScaleDuration,
+      curve: _kPressScaleCurve,
+      child: widget.builder(_setPressed),
+    );
+  }
+}
+
 /// Handles the full-width drag surface plus rendering the indicator and tabs.
 class _PillNavBarBody extends StatefulWidget {
   const _PillNavBarBody({
@@ -198,10 +249,12 @@ class _PillNavBarBody extends StatefulWidget {
     required this.fadeDuration,
     required this.enableHapticFeedback,
     required this.enableIndicatorDrag,
+    required this.enablePressScale,
     required this.borderRadius,
     required this.indicatorColor,
     required this.indicatorBorderColor,
     required this.onChanged,
+    required this.onPressedChanged,
   });
 
   final List<CleanPillNavBarItem> items;
@@ -219,10 +272,12 @@ class _PillNavBarBody extends StatefulWidget {
   final Duration fadeDuration;
   final bool enableHapticFeedback;
   final bool enableIndicatorDrag;
+  final bool enablePressScale;
   final BorderRadius borderRadius;
   final Color indicatorColor;
   final Color indicatorBorderColor;
   final ValueChanged<int> onChanged;
+  final ValueChanged<bool> onPressedChanged;
 
   @override
   State<_PillNavBarBody> createState() => _PillNavBarBodyState();
@@ -241,6 +296,41 @@ class _PillNavBarBodyState extends State<_PillNavBarBody> {
   // Small tolerance to absorb pointer jitter on a "clean" tap so it doesn't
   // mistakenly engage live drag tracking (which skips the slide animation).
   static const double _dragEngageThreshold = 6.0;
+
+  // Press-scale state.
+  bool _pressed = false;
+  DateTime? _pressedAt;
+  Timer? _releaseTimer;
+
+  @override
+  void dispose() {
+    _releaseTimer?.cancel();
+    super.dispose();
+  }
+
+  void _beginPress() {
+    if (!widget.enablePressScale) return;
+    _releaseTimer?.cancel();
+    _pressedAt = DateTime.now();
+    _pressed = true;
+    widget.onPressedChanged(true);
+  }
+
+  void _endPress() {
+    if (!_pressed) return;
+    final elapsed = DateTime.now().difference(_pressedAt ?? DateTime.now());
+    final remaining = _kMinPressVisible - elapsed;
+    if (remaining <= Duration.zero) {
+      _pressed = false;
+      widget.onPressedChanged(false);
+    } else {
+      _releaseTimer?.cancel();
+      _releaseTimer = Timer(remaining, () {
+        _pressed = false;
+        widget.onPressedChanged(false);
+      });
+    }
+  }
 
   double get _maxLeft => (widget.items.length - 1) * widget.itemWidth;
 
@@ -265,6 +355,7 @@ class _PillNavBarBodyState extends State<_PillNavBarBody> {
     setState(() {
       _pressedIndex = tapped;
     });
+    _beginPress();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -303,6 +394,7 @@ class _PillNavBarBodyState extends State<_PillNavBarBody> {
       _dragging = false;
       _pressedIndex = null;
     });
+    _endPress();
 
     if (resolvedIndex != widget.selectedIndex) {
       if (widget.enableHapticFeedback) {
@@ -318,6 +410,7 @@ class _PillNavBarBodyState extends State<_PillNavBarBody> {
       _pressedIndex = null;
     });
     _downPosition = null;
+    _endPress();
   }
 
   @override

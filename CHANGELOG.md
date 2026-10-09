@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Added press-scale effect: the whole bar (background, indicator, icons and labels) scales up slightly when touched, stays scaled while held or dragged, and scales back on release. Quick taps still show a brief scale-up. Opt out via `enablePressScale: false`.
+
 ## 1.0.0
 
 * **Breaking:** Renamed `PillNavBar` → `CleanPillNavBar`, `PillNavBarItem` → `CleanPillNavBarItem`, and `kPillNavBarMaxItems` → `kCleanPillNavBarMaxItems` to match the package name.
