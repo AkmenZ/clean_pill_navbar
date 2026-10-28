@@ -10,10 +10,12 @@ import 'pill_navbar_item.dart';
 const int kCleanPillNavBarMaxItems = 5;
 
 // Press-scale behaviour (hardcoded for now).
-const double _kPressScale = 1.04;
-const Duration _kPressScaleDuration = Duration(milliseconds: 200);
+const double _kPressDownScale = 0.98; // while pressed
+const double _kReleaseScale = 1.02; // brief bump on release
+const Duration _kPressScaleDuration = Duration(milliseconds: 120);
+const Duration _kReleaseBumpDuration = Duration(milliseconds: 120);
 const Curve _kPressScaleCurve = Curves.easeOut;
-// Keeps the scale-up visible long enough on a quick tap.
+// Keeps the press-down visible long enough on a quick tap.
 const Duration _kMinPressVisible = Duration(milliseconds: 120);
 
 /// A clean, customizable, iOS 26+ inspired pill-shaped navigation bar.
@@ -213,17 +215,34 @@ class _PressScale extends StatefulWidget {
 }
 
 class _PressScaleState extends State<_PressScale> {
-  bool _pressed = false;
+  double _scale = 1.0;
+  Timer? _settleTimer;
 
-  void _setPressed(bool value) {
-    if (_pressed == value || !mounted) return;
-    setState(() => _pressed = value);
+  @override
+  void dispose() {
+    _settleTimer?.cancel();
+    super.dispose();
+  }
+
+  void _setPressed(bool pressed) {
+    if (!widget.enabled || !mounted) return;
+    _settleTimer?.cancel();
+
+    if (pressed) {
+      setState(() => _scale = _kPressDownScale);
+    } else {
+      // Bump up slightly on release, then settle back to 1.0.
+      setState(() => _scale = _kReleaseScale);
+      _settleTimer = Timer(_kReleaseBumpDuration, () {
+        if (mounted) setState(() => _scale = 1.0);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedScale(
-      scale: (widget.enabled && _pressed) ? _kPressScale : 1.0,
+      scale: _scale,
       duration: _kPressScaleDuration,
       curve: _kPressScaleCurve,
       child: widget.builder(_setPressed),
