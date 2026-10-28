@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Updated press-scale effect: the whole bar now scales down slightly while touched (and stays scaled while held or dragged), then gives a brief scale-up bump on release before settling back to normal. Still opt out via `enablePressScale: false`.
+
 ## 1.0.1
 
 * Added press-scale effect: the whole bar (background, indicator, icons and labels) scales up slightly when touched, stays scaled while held or dragged, and scales back on release. Quick taps still show a brief scale-up. Opt out via `enablePressScale: false`.
